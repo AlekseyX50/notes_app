@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои Заметки</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📝 Мои Заметки</h1>
+            <button id="install-btn" class="install-btn" style="display: none;">Установить</button>
+        </header>
+
+        <div class="editor">
+            <textarea id="note-text" placeholder="Начните писать заметку..."></textarea>
+            <div class="editor-actions">
+                <button id="save-btn" class="btn btn-primary">Сохранить</button>
+                <button id="clear-btn" class="btn btn-secondary">Очистить</button>
+            </div>
+        </div>
+
+        <div class="notes-list">
+            <h2>Сохраненные заметки</h2>
+            <div id="notes-container"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
