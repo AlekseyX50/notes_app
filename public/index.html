@@ -12,31 +12,106 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-    
-    <!-- Безопасный конфиг Firebase -->
-    <script src="firebase-config.js"></script>
 </head>
 <body>
-    <!-- Остальной код без изменений -->
     <div class="container">
-        <!-- ... существующий код ... -->
+        <header>
+            <h1>📝 Мои Заметки</h1>
+            <div class="header-actions">
+                <div id="user-info" style="display: none;">
+                    <span id="user-email" style="margin-right: 15px;"></span>
+                    <button id="theme-toggle" class="btn btn-secondary" style="margin-right: 10px;">🌙</button>
+                    <button id="logout-btn" class="btn btn-secondary">Выйти</button>
+                </div>
+                <button id="install-btn" class="install-btn" style="display: none;">Установить</button>
+            </div>
+        </header>
+
+        <!-- Экран входа -->
+        <div id="auth-screen" class="auth-screen">
+            <div class="auth-container">
+                <h2>Вход в Заметки</h2>
+                <form id="auth-form">
+                    <input type="email" id="email" placeholder="Email" required>
+                    <input type="password" id="password" placeholder="Пароль" required>
+                    <button type="submit" id="login-btn" class="btn btn-primary">Войти</button>
+                    <button type="button" id="signup-btn" class="btn btn-secondary">Создать аккаунт</button>
+                </form>
+                <div id="auth-message" class="auth-message"></div>
+            </div>
+        </div>
+
+        <!-- Основное приложение (изначально скрыто) -->
+        <div id="app-screen" style="display: none;">
+            <!-- Панель категорий -->
+            <div class="categories-panel">
+                <div class="categories-header">
+                    <h3>Категории</h3>
+                    <button id="add-category-btn" class="btn btn-secondary">+</button>
+                </div>
+                <div id="categories-list" class="categories-list">
+                    <button class="category-btn active" data-category="all">Все заметки</button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="editor">
+                    <textarea id="note-text" placeholder="Начните писать заметку..."></textarea>
+                    <div class="editor-actions">
+                        <select id="category-select" class="category-select">
+                            <option value="">Выберите категорию</option>
+                        </select>
+                        <button id="save-btn" class="btn btn-primary">Сохранить</button>
+                        <button id="clear-btn" class="btn btn-secondary">Очистить</button>
+                    </div>
+                </div>
+
+                <div class="notes-list">
+                    <h2 id="notes-title">Мои заметки</h2>
+                    <div id="notes-container"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- ВСТАВЬ ЭТОТ СКРИПТ ПЕРЕД ЗАКРЫВАЮЩИМ ТЕГОМ BODY -->
+    <!-- Модальное окно для создания категории -->
+    <div id="category-modal" class="modal">
+        <div class="modal-content">
+            <h3>Новая категория</h3>
+            <input type="text" id="category-name" placeholder="Название категории" maxlength="100">
+            <input type="color" id="category-color" value="#4f46e5">
+            <div class="modal-actions">
+                <button id="cancel-category-btn" class="btn btn-secondary">Отмена</button>
+                <button id="create-category-btn" class="btn btn-primary">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================== -->
+    <!-- КОНФИГУРАЦИЯ FIREBASE (ВЫБЕРИ ОДИН ВАРИАНТ) -->
+    <!-- =========================================== -->
+
+    <!-- ВАРИАНТ A: Для локальной разработки -->
+    <!-- РАСКОММЕНТИРУЙ следующую строку для разработки -->
+    <!-- <script src="config/dev-config.js"></script> -->
+
+    <!-- ВАРИАНТ B: Для GitHub Pages с ручной вставкой -->
+    <!-- РАСКОММЕНТИРУЙ и ЗАПОЛНИ для продакшена -->
     <script>
-        // Для GitHub Pages - вставь сюда реальные значения ПЕРЕД деплоем
-        // НО: не коммить этот файл с реальными значениями!
-        // Вместо этого используй GitHub Secrets или другой метод
+        // 🚨 ВНИМАНИЕ: Не коммить этот блок с реальными ключами!
+        // На GitHub Pages этот блок будет заполняться автоматически через GitHub Actions
         window.FIREBASE_CONFIG = {
-            apiKey: "AIzaSyAf88iNaZzwhYi3JI91hTTNkKPhvLbvqP0",
-            authDomain: "my-notes-app-5644d.firebaseapp.com",
-            projectId: "my-notes-app-5644d",
-            storageBucket: "my-notes-app-5644d.firebasestorage.app",
-            messagingSenderId: "658136663511",
-            appId: "1:658136663511:web:062b48c6ddb602bf44b792"
+            apiKey: "DEMO_KEY_DO_NOT_COMMIT",
+            authDomain: "demo.firebaseapp.com",
+            projectId: "demo-project",
+            storageBucket: "demo.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
         };
     </script>
-    
+
+    <!-- Безопасный конфиг Firebase -->
+    <script src="firebase-config.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
