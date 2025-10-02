@@ -1,0 +1,45 @@
+# ======================
+# FIREBASE CONFIG FILES
+# ======================
+config/
+.env
+.env.*
+*.env
+firebase-config-private.js
+firebase-keys.js
+config.local.js
+config-dev.js
+
+# ======================
+# DEVELOPMENT FILES
+# ======================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ======================
+# IDE FILES
+# ======================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ======================
+# OS FILES
+# ======================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ======================
+# LOGS
+# ======================
+logs
+*.log

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои Заметки</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Безопасный конфиг Firebase -->
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <!-- Остальной код без изменений -->
+    <div class="container">
+        <!-- ... существующий код ... -->
+    </div>
+
+    <!-- ВСТАВЬ ЭТОТ СКРИПТ ПЕРЕД ЗАКРЫВАЮЩИМ ТЕГОМ BODY -->
+    <script>
+        // Для GitHub Pages - вставь сюда реальные значения ПЕРЕД деплоем
+        // НО: не коммить этот файл с реальными значениями!
+        // Вместо этого используй GitHub Secrets или другой метод
+        window.FIREBASE_CONFIG = {
+            apiKey: "AIzaSyAf88iNaZzwhYi3JI91hTTNkKPhvLbvqP0",
+            authDomain: "my-notes-app-5644d.firebaseapp.com",
+            projectId: "my-notes-app-5644d",
+            storageBucket: "my-notes-app-5644d.firebasestorage.app",
+            messagingSenderId: "658136663511",
+            appId: "1:658136663511:web:062b48c6ddb602bf44b792"
+        };
+    </script>
+    
+    <script src="app.js"></script>
+</body>
+</html>
