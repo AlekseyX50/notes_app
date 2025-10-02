@@ -18,8 +18,9 @@
             <h1>📝 Мои Заметки</h1>
             <div class="header-actions">
                 <div id="user-info" style="display: none;">
-                    <span id="user-email" style="margin-right: 15px; color: white;"></span>
-                    <button id="logout-btn" class="btn btn-secondary" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white;">Выйти</button>
+                    <span id="user-email" style="margin-right: 15px;"></span>
+                    <button id="theme-toggle" class="btn btn-secondary" style="margin-right: 10px;">🌙</button>
+                    <button id="logout-btn" class="btn btn-secondary">Выйти</button>
                 </div>
                 <button id="install-btn" class="install-btn" style="display: none;">Установить</button>
             </div>
@@ -41,17 +42,46 @@
 
         <!-- Основное приложение (изначально скрыто) -->
         <div id="app-screen" style="display: none;">
-            <div class="editor">
-                <textarea id="note-text" placeholder="Начните писать заметку..."></textarea>
-                <div class="editor-actions">
-                    <button id="save-btn" class="btn btn-primary">Сохранить</button>
-                    <button id="clear-btn" class="btn btn-secondary">Очистить</button>
+            <!-- Панель категорий -->
+            <div class="categories-panel">
+                <div class="categories-header">
+                    <h3>Категории</h3>
+                    <button id="add-category-btn" class="btn btn-secondary">+</button>
+                </div>
+                <div id="categories-list" class="categories-list">
+                    <button class="category-btn active" data-category="all">Все заметки</button>
                 </div>
             </div>
 
-            <div class="notes-list">
-                <h2>Мои заметки</h2>
-                <div id="notes-container"></div>
+            <div class="main-content">
+                <div class="editor">
+                    <textarea id="note-text" placeholder="Начните писать заметку..."></textarea>
+                    <div class="editor-actions">
+                        <select id="category-select" class="category-select">
+                            <option value="">Выберите категорию</option>
+                        </select>
+                        <button id="save-btn" class="btn btn-primary">Сохранить</button>
+                        <button id="clear-btn" class="btn btn-secondary">Очистить</button>
+                    </div>
+                </div>
+
+                <div class="notes-list">
+                    <h2 id="notes-title">Мои заметки</h2>
+                    <div id="notes-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для создания категории -->
+    <div id="category-modal" class="modal">
+        <div class="modal-content">
+            <h3>Новая категория</h3>
+            <input type="text" id="category-name" placeholder="Название категории" maxlength="100">
+            <input type="color" id="category-color" value="#4f46e5">
+            <div class="modal-actions">
+                <button id="cancel-category-btn" class="btn btn-secondary">Отмена</button>
+                <button id="create-category-btn" class="btn btn-primary">Создать</button>
             </div>
         </div>
     </div>
