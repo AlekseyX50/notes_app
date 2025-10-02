@@ -1,3 +1,27 @@
+// app.js - Полная версия с защитой Firebase
+
+// Проверка инициализации Firebase
+if (typeof firebase === 'undefined') {
+    console.error('❌ Firebase SDK not loaded');
+    document.body.innerHTML = `
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center; max-width: 500px;">
+                <h2 style="color: #ef4444; margin-bottom: 20px;">🚨 Ошибка загрузки</h2>
+                <p style="margin-bottom: 20px; color: #374151;">Firebase SDK не загружен. Проверьте подключение к интернету.</p>
+                <button onclick="location.reload()" style="background: #4f46e5; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 16px;">
+                    Перезагрузить страницу
+                </button>
+            </div>
+        </div>
+    `;
+    throw new Error('Firebase SDK not loaded');
+}
+
+if (typeof auth === 'undefined' || typeof db === 'undefined') {
+    console.error('❌ Firebase not initialized properly');
+    // Приложение продолжит работу, но покажет ошибку при попытке использовать Firebase
+}
+
 class NotesApp {
     constructor() {
         this.notes = [];
@@ -93,6 +117,13 @@ class NotesApp {
     initAuth() {
         console.log('Инициализация аутентификации...');
         
+        // Проверяем, что Firebase инициализирован
+        if (typeof auth === 'undefined') {
+            console.error('Firebase Auth not available');
+            this.showAuthMessage('Ошибка инициализации Firebase. Перезагрузите страницу.', 'error');
+            return;
+        }
+        
         // Слушатель изменения состояния аутентификации
         auth.onAuthStateChanged((user) => {
             console.log('Состояние аутентификации изменено:', user);
@@ -107,6 +138,7 @@ class NotesApp {
             }
         }, (error) => {
             console.error('Ошибка в слушателе аутентификации:', error);
+            this.showAuthMessage('Ошибка подключения к серверу аутентификации', 'error');
         });
     }
 
@@ -181,6 +213,7 @@ class NotesApp {
             console.log('Успешный выход');
         } catch (error) {
             console.error('Ошибка выхода:', error);
+            this.showNotification('Ошибка при выходе: ' + error.message);
         }
     }
 
@@ -201,6 +234,8 @@ class NotesApp {
                 return 'Слабый пароль';
             case 'auth/network-request-failed':
                 return 'Проблемы с сетью. Проверьте подключение к интернету';
+            case 'auth/too-many-requests':
+                return 'Слишком много попыток. Попробуйте позже';
             default:
                 return 'Ошибка аутентификации: ' + error.message;
         }
@@ -269,20 +304,26 @@ class NotesApp {
             this.updateCategorySelect();
         } catch (error) {
             console.error('Ошибка загрузки категорий:', error);
+            this.showNotification('Ошибка загрузки категорий: ' + error.message);
         }
     }
 
     async createCategory() {
+        if (!this.currentUser) {
+            this.showNotification('Вы не авторизованы!');
+            return;
+        }
+
         const name = document.getElementById('category-name').value.trim();
         const color = document.getElementById('category-color').value;
 
         if (!name) {
-            alert('Введите название категории');
+            this.showNotification('Введите название категории');
             return;
         }
 
         if (this.categories.find(cat => cat.name.toLowerCase() === name.toLowerCase())) {
-            alert('Категория с таким названием уже существует');
+            this.showNotification('Категория с таким названием уже существует');
             return;
         }
 
@@ -300,12 +341,16 @@ class NotesApp {
             this.showNotification('Категория создана!');
         } catch (error) {
             console.error('Ошибка создания категории:', error);
-            alert('Ошибка создания категории: ' + error.message);
+            this.showNotification('Ошибка создания категории: ' + error.message);
         }
     }
 
     async deleteCategory(categoryId) {
-        if (!this.currentUser || !confirm('Удалить эту категорию? Все заметки в этой категории станут без категории.')) return;
+        if (!this.currentUser) return;
+        
+        if (!confirm('Удалить эту категорию? Все заметки в этой категории станут без категории.')) {
+            return;
+        }
 
         try {
             // Переносим все заметки этой категории в "без категории"
@@ -333,7 +378,7 @@ class NotesApp {
             this.loadNotes();
         } catch (error) {
             console.error('Ошибка удаления категории:', error);
-            alert('Ошибка удаления категории: ' + error.message);
+            this.showNotification('Ошибка удаления категории: ' + error.message);
         }
     }
 
@@ -519,7 +564,7 @@ class NotesApp {
 
     async saveNote() {
         if (!this.currentUser) {
-            alert('Вы не авторизованы!');
+            this.showNotification('Вы не авторизованы!');
             return;
         }
 
@@ -528,7 +573,7 @@ class NotesApp {
         const categoryId = categorySelect ? categorySelect.value || null : null;
         
         if (!text) {
-            alert('Введите текст заметки!');
+            this.showNotification('Введите текст заметки!');
             return;
         }
 
@@ -547,7 +592,7 @@ class NotesApp {
             await this.loadNotes();
         } catch (error) {
             console.error('Ошибка сохранения:', error);
-            alert('Ошибка сохранения заметки: ' + error.message);
+            this.showNotification('Ошибка сохранения заметки: ' + error.message);
         }
     }
 
@@ -660,7 +705,11 @@ class NotesApp {
     }
 
     async deleteNote(id) {
-        if (!this.currentUser || !confirm('Удалить эту заметку?')) return;
+        if (!this.currentUser) return;
+        
+        if (!confirm('Удалить эту заметку?')) {
+            return;
+        }
 
         try {
             await db.collection('notes').doc(id).delete();
@@ -668,7 +717,7 @@ class NotesApp {
             await this.loadNotes();
         } catch (error) {
             console.error('Ошибка удаления:', error);
-            alert('Ошибка удаления заметки: ' + error.message);
+            this.showNotification('Ошибка удаления заметки: ' + error.message);
         }
     }
 
@@ -722,8 +771,35 @@ class NotesApp {
     }
 
     showNotification(message) {
-        console.log(message);
-        alert(message); // Временное решение
+        // Временное решение - можно заменить на красивые toast уведомления
+        console.log('Notification:', message);
+        
+        // Создаем временное уведомление
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow);
+            z-index: 1000;
+            font-family: inherit;
+            max-width: 300px;
+            word-wrap: break-word;
+        `;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Автоматически удаляем через 3 секунды
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 3000);
     }
 
     async registerServiceWorker() {
@@ -761,9 +837,25 @@ class NotesApp {
                 deferredPrompt = null;
             });
         }
+
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA installed');
+            if (installBtn) installBtn.style.display = 'none';
+            deferredPrompt = null;
+        });
     }
 }
 
-// Инициализация приложения
+// Инициализация приложения когда DOM готов
 console.log('Запуск приложения...');
-const app = new NotesApp();
+let app;
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        app = new NotesApp();
+        window.app = app; // Делаем глобально доступным для HTML onclick
+    });
+} else {
+    app = new NotesApp();
+    window.app = app; // Делаем глобально доступным для HTML onclick
+}
