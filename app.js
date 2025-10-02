@@ -120,7 +120,7 @@ class NotesApp {
             case 'auth/weak-password':
                 return 'Слабый пароль';
             default:
-                return 'Ошибка аутентификации';
+                return 'Ошибка аутентификации: ' + error.message;
         }
     }
 
@@ -150,7 +150,10 @@ class NotesApp {
     }
 
     async saveNote() {
-        if (!this.currentUser) return;
+        if (!this.currentUser) {
+            alert('Вы не авторизованы!');
+            return;
+        }
 
         const text = document.getElementById('note-text').value.trim();
         
@@ -168,19 +171,25 @@ class NotesApp {
 
         try {
             await db.collection('notes').add(note);
-            this.displayNotes();
             this.clearEditor();
             this.showNotification('Заметка сохранена!');
+            // Перезагружаем заметки после сохранения
+            await this.loadNotes();
         } catch (error) {
             console.error('Ошибка сохранения:', error);
-            alert('Ошибка сохранения заметки');
+            alert('Ошибка сохранения заметки: ' + error.message);
         }
     }
 
     async loadNotes() {
-        if (!this.currentUser) return;
+        if (!this.currentUser) {
+            this.notes = [];
+            this.displayNotes();
+            return;
+        }
 
         try {
+            console.log('Загрузка заметок для пользователя:', this.currentUser.uid);
             const snapshot = await db.collection('notes')
                 .where('userId', '==', this.currentUser.uid)
                 .orderBy('createdAt', 'desc')
@@ -191,9 +200,34 @@ class NotesApp {
                 ...doc.data()
             }));
             
+            console.log('Загружено заметок:', this.notes.length);
             this.displayNotes();
         } catch (error) {
-            console.error('Ошибка загрузки:', error);
+            console.error('Ошибка загрузки заметок:', error);
+            // Если ошибка из-за порядка сортировки, пробуем без сортировки
+            if (error.code === 'failed-precondition') {
+                try {
+                    const snapshot = await db.collection('notes')
+                        .where('userId', '==', this.currentUser.uid)
+                        .get();
+                    
+                    this.notes = snapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    })).sort((a, b) => {
+                        // Сортируем вручную по дате создания
+                        return new Date(b.createdAt?.toDate() || b.date) - new Date(a.createdAt?.toDate() || a.date);
+                    });
+                    
+                    console.log('Загружено заметок (без индекса):', this.notes.length);
+                    this.displayNotes();
+                } catch (error2) {
+                    console.error('Ошибка загрузки без сортировки:', error2);
+                    this.showNotification('Ошибка загрузки заметок');
+                }
+            } else {
+                this.showNotification('Ошибка загрузки заметок');
+            }
         }
     }
 
@@ -202,11 +236,12 @@ class NotesApp {
 
         try {
             await db.collection('notes').doc(id).delete();
-            this.loadNotes(); // Перезагружаем заметки
             this.showNotification('Заметка удалена');
+            // Перезагружаем заметки после удаления
+            await this.loadNotes();
         } catch (error) {
             console.error('Ошибка удаления:', error);
-            alert('Ошибка удаления заметки');
+            alert('Ошибка удаления заметки: ' + error.message);
         }
     }
 
@@ -218,7 +253,7 @@ class NotesApp {
     displayNotes() {
         const container = document.getElementById('notes-container');
         
-        if (this.notes.length === 0) {
+        if (!this.notes || this.notes.length === 0) {
             container.innerHTML = '<div class="empty-state">Заметок пока нет. Начните писать!</div>';
             return;
         }
@@ -227,20 +262,21 @@ class NotesApp {
             <div class="note-item">
                 <button class="delete-btn" onclick="app.deleteNote('${note.id}')">×</button>
                 <div class="note-text">${this.escapeHtml(note.text)}</div>
-                <div class="note-date">Создано: ${note.date}</div>
+                <div class="note-date">Создано: ${note.date || (note.createdAt ? new Date(note.createdAt.toDate()).toLocaleString('ru-RU') : 'Неизвестно')}</div>
             </div>
         `).join('');
     }
 
     escapeHtml(text) {
+        if (!text) return '';
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
     }
 
     showNotification(message) {
-        // Можно заменить на красивые toast-уведомления
-        console.log(message);
+        // Временное уведомление через alert
+        alert(message);
     }
 
     async registerServiceWorker() {
