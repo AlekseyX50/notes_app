@@ -3,8 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -15,17 +14,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
-
+        
       - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Create production Firebase config
+        uses: actions/configure-pages@v3
+        
+      - name: Create Firebase config
         run: |
-          # Создаем JavaScript файл с конфигом из secrets
           cat > firebase-config-prod.js << 'EOF'
-          // 🔒 AUTO-GENERATED CONFIG - DO NOT EDIT
           window.FIREBASE_CONFIG = {
             apiKey: "${{ secrets.FIREBASE_API_KEY }}",
             authDomain: "${{ secrets.FIREBASE_AUTH_DOMAIN }}",
@@ -34,108 +31,10 @@ jobs:
             messagingSenderId: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}",
             appId: "${{ secrets.FIREBASE_APP_ID }}"
           };
-          console.log('🚀 Production Firebase config loaded via GitHub Secrets');
-          EOF
-
-      - name: Replace config in HTML
-        run: |
-          # Создаем временный файл с подставленными значениями
-          cat > index.html << 'EOF'
-          <!DOCTYPE html>
-          <html lang="ru">
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Мои Заметки</title>
-              <link rel="stylesheet" href="styles.css">
-              <link rel="manifest" href="manifest.json">
-              <meta name="theme-color" content="#4f46e5">
-              
-              <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-              <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-              <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-          </head>
-          <body>
-              <div class="container">
-                  <header>
-                      <h1>📝 Мои Заметки</h1>
-                      <div class="header-actions">
-                          <div id="user-info" style="display: none;">
-                              <span id="user-email" style="margin-right: 15px;"></span>
-                              <button id="theme-toggle" class="btn btn-secondary" style="margin-right: 10px;">🌙</button>
-                              <button id="logout-btn" class="btn btn-secondary">Выйти</button>
-                          </div>
-                          <button id="install-btn" class="install-btn" style="display: none;">Установить</button>
-                      </div>
-                  </header>
-
-                  <div id="auth-screen" class="auth-screen">
-                      <div class="auth-container">
-                          <h2>Вход в Заметки</h2>
-                          <form id="auth-form">
-                              <input type="email" id="email" placeholder="Email" required>
-                              <input type="password" id="password" placeholder="Пароль" required>
-                              <button type="submit" id="login-btn" class="btn btn-primary">Войти</button>
-                              <button type="button" id="signup-btn" class="btn btn-secondary">Создать аккаунт</button>
-                          </form>
-                          <div id="auth-message" class="auth-message"></div>
-                      </div>
-                  </div>
-
-                  <div id="app-screen" style="display: none;">
-                      <div class="categories-panel">
-                          <div class="categories-header">
-                              <h3>Категории</h3>
-                              <button id="add-category-btn" class="btn btn-secondary">+</button>
-                          </div>
-                          <div id="categories-list" class="categories-list">
-                              <button class="category-btn active" data-category="all">Все заметки</button>
-                          </div>
-                      </div>
-
-                      <div class="main-content">
-                          <div class="editor">
-                              <textarea id="note-text" placeholder="Начните писать заметку..."></textarea>
-                              <div class="editor-actions">
-                                  <select id="category-select" class="category-select">
-                                      <option value="">Выберите категорию</option>
-                                  </select>
-                                  <button id="save-btn" class="btn btn-primary">Сохранить</button>
-                                  <button id="clear-btn" class="btn btn-secondary">Очистить</button>
-                              </div>
-                          </div>
-
-                          <div class="notes-list">
-                              <h2 id="notes-title">Мои заметки</h2>
-                              <div id="notes-container"></div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-
-              <div id="category-modal" class="modal">
-                  <div class="modal-content">
-                      <h3>Новая категория</h3>
-                      <input type="text" id="category-name" placeholder="Название категории" maxlength="100">
-                      <input type="color" id="category-color" value="#4f46e5">
-                      <div class="modal-actions">
-                          <button id="cancel-category-btn" class="btn btn-secondary">Отмена</button>
-                          <button id="create-category-btn" class="btn btn-primary">Создать</button>
-                      </div>
-                  </div>
-              </div>
-
-              <script src="firebase-config-prod.js"></script>
-              <script src="firebase-config.js"></script>
-              <script src="app.js"></script>
-          </body>
-          </html>
           EOF
           
-          echo "✅ Production HTML created with secure Firebase config"
-
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v2
         with:
           path: .
 
@@ -148,4 +47,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v2
